@@ -58,6 +58,8 @@ def get_system_state():
     return state
 
 def perform_action(state, action):
+    dimmer = state[-2]
+    server = state[-1]
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,23 +67,33 @@ def perform_action(state, action):
     s.sendall(b'get_max_servers')
     data = s.recv(1024)
     max_server = int(str(data.decode("utf-8")))
+    done = False
     if action[0]=="add":
-        if state[-1]== max_server:
+        if server== max_server:
             done = True
         else:
-            conn = s.connect((host, port))
             s.sendall(b'add_server')
             data = s.recv(1024)
             done = False
     elif action[0]=="remove":
-        if state[-1] == 0:
+        if server == 0:
             done = True
         else:
-            conn = s.connect((host, port))
             s.sendall(b'remove_server')
             data = s.recv(1024)
-    s.sendall(b'set_dimmer' + action[1])
-    data = s.recv(1024)
+
+    if action[1] > 0:
+        if dimmer + 0.25 <= 1:
+            s.sendall(b'set_dimmer' + (dimmer + 0.25))
+            data = s.recv(1024)
+        else:
+            done = True
+    elif action[1] < 0:
+        if dimmer - 0.25 >= 0:
+            s.sendall(b'set_dimmer' + (dimmer - 0.25))
+            data = s.recv(1024)
+        else:
+            done = True
     s.close()
     return done
 

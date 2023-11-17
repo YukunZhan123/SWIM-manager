@@ -1,5 +1,5 @@
 import time
-
+import socket
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -109,11 +109,33 @@ def calculate_utility(state):
 
 
 
+def reset(server_init, dimmer_init):
+    state = get_system_state()
+    crt_serevr = state[-1]
+    host = "127.0.0.1"
+    port = 4242
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn = s.connect((host, port))
+    while crt_serevr > server_init:
+        s.sendall(b'remove_server')
+        crt_serevr -= 1
+    while crt_serevr < server_init:
+        s.sendall(b'add_server')
+        crt_serevr += 1
+    s.sendall(b'set_dimmer' + dimmer_init)
+    s.close()
+
+
 
 # Real-time execution loop
-state_size = 10  # Size of the state vector
-action_size = 7  # Number of actions
+state_size = 5  # Size of the state vector
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
+action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
+
+state_init = get_system_state()
+server_init = state_init[-1]
+dimmer_init = state_init[-2]
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
@@ -134,4 +156,5 @@ while True:  # Replace with the condition appropriate for your application
     manager.update(state, action, reward, next_state, done)
 
     if done:  # Implement the logic to determine if the episode has ended
-        break
+        reset(server_init, dimmer_init)
+        continue
