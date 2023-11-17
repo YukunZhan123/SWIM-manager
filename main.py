@@ -143,6 +143,9 @@ while True:  # Replace with the condition appropriate for your application
 
     # Plan
     action = manager.select_action(state)
+    print(action)
+    action = action_choices[action]
+
 
     # Execute
     done = perform_action(state, action)  # Implement this function
