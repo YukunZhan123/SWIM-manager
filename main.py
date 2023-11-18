@@ -42,11 +42,12 @@ class Critic(nn.Module):
 
 # Actor-Critic Manager
 class ActorCriticManager:
-    def __init__(self, state_size, action_size, epsilon=1):
+    def __init__(self, state_size, action_size, epsilon=1, actor_lr=0.005, critic_lr=0.005):
         self.actor = Actor(state_size, action_size)
         self.critic = Critic(state_size)
-        self.actor_optimizer = optim.Adam(self.actor.parameters())
-        self.critic_optimizer = optim.Adam(self.critic.parameters())
+        # Set custom learning rates for the actor and critic optimizers
+        self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
+        self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=critic_lr)
         self.epsilon = epsilon
         self.gamma = 0.99  # Discount factor for future rewards
 
