@@ -127,12 +127,12 @@ def reset(server_init, dimmer_init):
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    while crt_serevr > server_init:
-        s.sendall(b'remove_server')
-        crt_serevr -= 1
-    while crt_serevr < server_init:
-        s.sendall(b'add_server')
-        crt_serevr += 1
+    # while crt_serevr > server_init:
+    #     s.sendall(b'remove_server')
+    #     crt_serevr -= 1
+    # while crt_serevr < server_init:
+    #     s.sendall(b'add_server')
+    #     crt_serevr += 1
     s.sendall(b'set_dimmer' + str.encode(str(float(dimmer_init))))
 
 
@@ -160,7 +160,7 @@ while True:  # Replace with the condition appropriate for your application
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
-    time.sleep(10)
+    time.sleep(60)
     next_state = get_system_state()
 
     # Analyze
