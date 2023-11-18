@@ -142,12 +142,12 @@ action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.2
 action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
 
-
+reset()
 
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
-    reset()
+
     state = get_system_state()
 
     # Plan
