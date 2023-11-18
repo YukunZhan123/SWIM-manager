@@ -131,14 +131,14 @@ def reset(server_init, dimmer_init):
     while crt_serevr < server_init:
         s.sendall(b'add_server')
         crt_serevr += 1
-    s.sendall(b'set_dimmer' + dimmer_init)
+    s.sendall(b'set_dimmer' + str.encode(str(float(dimmer_init))))
     s.close()
 
 
 
 # Real-time execution loop
 state_size = 5  # Size of the state vector
-action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.1], ["nothing", -0.1], ["nothing", 0], ["add", 0.1], ["add", -0.1], ["remove", 0.1], ["remove", -0.1]]
 action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
 
