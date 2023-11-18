@@ -42,7 +42,7 @@ class Critic(nn.Module):
 
 # Actor-Critic Manager
 class ActorCriticManager:
-    def __init__(self, state_size, action_size, epsilon=0.5):
+    def __init__(self, state_size, action_size, epsilon=0.2):
         self.actor = Actor(state_size, action_size)
         self.critic = Critic(state_size)
         self.actor_optimizer = optim.Adam(self.actor.parameters())
@@ -62,6 +62,7 @@ class ActorCriticManager:
         return action
 
     def update(self, state, action, reward, next_state, done):
+        print("reward ", reward)
         state_tensor = torch.FloatTensor(state)
         next_state_tensor = torch.FloatTensor(next_state)
         reward_tensor = torch.FloatTensor([reward])
@@ -76,6 +77,7 @@ class ActorCriticManager:
 
         # Compute the critic loss
         critic_loss = (td_target - value).pow(2).mean()
+        print("critic_loss ", critic_loss)
         self.critic_optimizer.zero_grad()
         critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
         self.critic_optimizer.step()
@@ -87,6 +89,7 @@ class ActorCriticManager:
 
         # Negative log-likelihood loss
         actor_loss = -torch.log(action_probs) * (td_target - value.detach()).squeeze()
+        print("actor_loss ", actor_loss)
 
         # Reset gradients and perform a backward pass for the actor
         self.actor_optimizer.zero_grad()
@@ -132,7 +135,7 @@ def reset():
 
 # Real-time execution loop
 state_size = 5  # Size of the state vector
-action_choices = [["add", 0], ["remove", 0], ["nothing", 0.1], ["nothing", -0.1], ["nothing", 0], ["add", 0.1], ["add", -0.1], ["remove", 0.1], ["remove", -0.1]]
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
 action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
 
