@@ -71,20 +71,22 @@ def perform_action(state, action):
     data = s.recv(1024)
     max_server = int(str(data.decode("utf-8")))
     done = False
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn = s.connect((host, port))
     if action[0]=="add":
         if server == max_server:
             done = True
         else:
             s.sendall(b'add_server')
             data = s.recv(1024)
-            done = False
     elif action[0]=="remove":
         if server == 1:
             done = True
         else:
             s.sendall(b'remove_server')
             data = s.recv(1024)
-
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn = s.connect((host, port))
     if action[1] > 0:
         if float(dimmer) + 0.1 < 1:
             print(str.encode(str(float(dimmer) + 0.1)))

@@ -125,7 +125,7 @@ def reset():
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.9')
+    s.sendall(b'set_dimmer 0.5')
     s.recv(1024)
 
 
@@ -135,6 +135,8 @@ state_size = 5  # Size of the state vector
 action_choices = [["add", 0], ["remove", 0], ["nothing", 0.1], ["nothing", -0.1], ["nothing", 0], ["add", 0.1], ["add", -0.1], ["remove", 0.1], ["remove", -0.1]]
 action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
+
+
 
 
 while True:  # Replace with the condition appropriate for your application
