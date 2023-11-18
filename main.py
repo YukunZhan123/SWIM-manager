@@ -55,9 +55,11 @@ class ActorCriticManager:
         with torch.no_grad():
             action_probs = self.actor(state_tensor).numpy()
         if random.random() < self.epsilon:
+            print("random explore")
             action = np.random.choice(len(action_probs), p=action_probs)
             self.epsilon *= 0.9
         else:
+            print("choose best action")
             action = np.argmax(action_probs)
         return action
 
