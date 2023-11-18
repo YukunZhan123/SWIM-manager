@@ -7,6 +7,8 @@ import numpy as np
 import random
 from swim_api import get_system_state, perform_action  # Replace with your actual SWIM API calls
 
+torch.autograd.set_detect_anomaly(True)
+
 # Define Actor network architecture
 class Actor(nn.Module):
     def __init__(self, state_size, action_size):
