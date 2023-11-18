@@ -66,9 +66,9 @@ class ActorCriticManager:
         reward_tensor = torch.FloatTensor([reward])
         done_tensor = torch.FloatTensor([done])
 
-        # Ensure no inplace operations are performed on value and next_value
-        value = self.critic(state_tensor).clone()
-        next_value = self.critic(next_state_tensor).clone()
+        # Calculate the critic's estimate of the state's value and next state's value
+        value = self.critic(state_tensor)
+        next_value = self.critic(next_state_tensor).detach()
 
         # Calculate the temporal difference target
         td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
@@ -76,7 +76,7 @@ class ActorCriticManager:
         # Compute the critic loss
         critic_loss = (td_target - value).pow(2).mean()
         self.critic_optimizer.zero_grad()
-        critic_loss.backward(retain_graph=True)  # Retain the graph for actor update
+        critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
         self.critic_optimizer.step()
 
         # Compute the actor loss
@@ -89,8 +89,9 @@ class ActorCriticManager:
 
         # Reset gradients and perform a backward pass for the actor
         self.actor_optimizer.zero_grad()
-        actor_loss.backward()  # No need to retain graph here
+        actor_loss.backward()
         self.actor_optimizer.step()
+
 
 # Utility function
 def calculate_utility(state):
