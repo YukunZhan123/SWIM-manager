@@ -124,13 +124,18 @@ def reset(server_init, dimmer_init):
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn = s.connect((host, port))
+
     while crt_serevr > server_init:
+        conn = s.connect((host, port))
         s.sendall(b'remove_server')
+        s.close()
         crt_serevr -= 1
     while crt_serevr < server_init:
+        conn = s.connect((host, port))
         s.sendall(b'add_server')
+        s.close()
         crt_serevr += 1
+    conn = s.connect((host, port))
     s.sendall(b'set_dimmer' + str.encode(str(float(dimmer_init))))
     s.close()
 
