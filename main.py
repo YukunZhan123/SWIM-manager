@@ -56,7 +56,7 @@ class ActorCriticManager:
             action_probs = self.actor(state_tensor).numpy()
         if random.random() < self.epsilon:
             print("random explore")
-            action = np.random.choice(len(action_probs), p=action_probs)
+            action = np.random.choice(len(action_probs))
             self.epsilon *= 0.99
         else:
             print("choose best action")
