@@ -166,6 +166,13 @@ iteration_counter = 0
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print("it: ", iteration_counter)
+    
+    if iteration_counter % 50 == 0:
+        # Save the actor and critic networks
+        torch.save(manager.actor.state_dict(), f'actor.pth')
+        torch.save(manager.critic.state_dict(), f'critic.pth')
 
     state = get_system_state()
 
@@ -186,10 +193,6 @@ while True:  # Replace with the condition appropriate for your application
     manager.update(state, int(action), reward, next_state, done)
 
     iteration_counter += 1  # Increment the counter
-    if iteration_counter % 50 == 0:
-        # Save the actor and critic networks
-        torch.save(manager.actor.state_dict(), f'actor.pth')
-        torch.save(manager.critic.state_dict(), f'critic.pth')
 
     if done:  # Implement the logic to determine if the episode has ended
         reset()
