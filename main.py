@@ -155,7 +155,7 @@ while True:  # Replace with the condition appropriate for your application
     reward = calculate_utility(next_state)
 
     # Update the manager
-    manager.update(state, action, reward, next_state, done)
+    manager.update(state, int(action), reward, next_state, done)
 
     if done:  # Implement the logic to determine if the episode has ended
         reset(server_init, dimmer_init)
