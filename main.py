@@ -119,21 +119,14 @@ def calculate_utility(state):
 
 
 
-def reset(server_init, dimmer_init):
-    print("resetting environment\n")
-    state = get_system_state()
-    crt_serevr = state[-1]
+def reset():
+    print("resetting environment")
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    # while crt_serevr > server_init:
-    #     s.sendall(b'remove_server')
-    #     crt_serevr -= 1
-    # while crt_serevr < server_init:
-    #     s.sendall(b'add_server')
-    #     crt_serevr += 1
-    s.sendall(b'set_dimmer' + str.encode(str(float(dimmer_init))))
+    s.sendall(b'set_dimmer 0.5')
+    s.close()
 
 
 
@@ -149,18 +142,8 @@ dimmer_init = state_init[-2]
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
-    print("resetting environment\n")
-    host = "127.0.0.1"
-    port = 4242
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.8')
-    data = s.recv(1024)
-    print (" dimmer status ")
-    print(str(data.decode("utf-8")))
+    reset()
     state = get_system_state()
-    print("server ")
-    print(state[-1])
 
     # Plan
     action = manager.select_action(state)
