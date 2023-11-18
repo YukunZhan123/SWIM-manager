@@ -86,8 +86,9 @@ def perform_action(state, action):
             done = True
         else:
             s.sendall(b'remove_server')
-            time.sleep(10)
             data = s.recv(1024)
+
+    time.sleep(60)
 
 
 
