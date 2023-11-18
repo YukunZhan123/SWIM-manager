@@ -154,7 +154,7 @@ while True:  # Replace with the condition appropriate for your application
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.5')
+    s.sendall(b'set_dimmer 0.8')
     data = s.recv(1024)
     print (" dimmer status ")
     print(str(data.decode("utf-8")))
