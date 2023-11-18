@@ -1,4 +1,5 @@
 import time
+import os
 import socket
 import torch
 import torch.nn as nn
@@ -140,10 +141,28 @@ def reset():
 state_size = 5  # Size of the state vector
 action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
 action_size = 9  # Number of actions
+
+
+# Define paths to your saved model files
+actor_model_path = 'actor.pth'
+critic_model_path = 'critic.pth'
+
+# Initialize your manager
 manager = ActorCriticManager(state_size, action_size)
+
+# Check if both the actor and critic model files exist
+if os.path.exists(actor_model_path) and os.path.exists(critic_model_path):
+    print("Loading saved model weights.")
+    manager.actor.load_state_dict(torch.load(actor_model_path))
+    manager.critic.load_state_dict(torch.load(critic_model_path))
+else:
+    print("No saved model weights found, initializing new models.")
+
 
 reset()
 
+# Add a counter for iterations
+iteration_counter = 0
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
@@ -165,6 +184,12 @@ while True:  # Replace with the condition appropriate for your application
 
     # Update the manager
     manager.update(state, int(action), reward, next_state, done)
+
+    iteration_counter += 1  # Increment the counter
+    if iteration_counter % 50 == 0:
+        # Save the actor and critic networks
+        torch.save(manager.actor.state_dict(), f'actor.pth')
+        torch.save(manager.critic.state_dict(), f'critic.pth')
 
     if done:  # Implement the logic to determine if the episode has ended
         reset()
