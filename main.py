@@ -157,7 +157,7 @@ while True:  # Replace with the condition appropriate for your application
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
-    time.sleep(60)
+    time.sleep(5)
     next_state = get_system_state()
 
     # Analyze

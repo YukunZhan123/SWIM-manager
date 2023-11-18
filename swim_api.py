@@ -58,6 +58,7 @@ def get_system_state():
     return state
 
 def perform_action(state, action):
+    print(action)
     dimmer = state[-2]
     server = state[-1]
     host = "127.0.0.1"
