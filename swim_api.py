@@ -82,7 +82,7 @@ def perform_action(state, action):
             s.sendall(b'add_server')
             data = s.recv(1024)
     elif action[0]=="remove":
-        if server == 1:
+        if server == 2:
             done = True
         else:
             s.sendall(b'remove_server')
