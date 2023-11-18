@@ -168,7 +168,7 @@ while True:  # Replace with the condition appropriate for your application
     # Monitor
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("it: ", iteration_counter)
-    
+
     if iteration_counter % 50 == 0:
         # Save the actor and critic networks
         torch.save(manager.actor.state_dict(), f'actor.pth')
