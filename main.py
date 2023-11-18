@@ -42,7 +42,7 @@ class Critic(nn.Module):
 
 # Actor-Critic Manager
 class ActorCriticManager:
-    def __init__(self, state_size, action_size, epsilon=0.1):
+    def __init__(self, state_size, action_size, epsilon=0.5):
         self.actor = Actor(state_size, action_size)
         self.critic = Critic(state_size)
         self.actor_optimizer = optim.Adam(self.actor.parameters())
@@ -56,6 +56,7 @@ class ActorCriticManager:
             action_probs = self.actor(state_tensor).numpy()
         if random.random() < self.epsilon:
             action = np.random.choice(len(action_probs), p=action_probs)
+            self.epsilon *= 0.99
         else:
             action = np.argmax(action_probs)
         return action

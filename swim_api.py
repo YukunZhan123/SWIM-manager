@@ -83,16 +83,16 @@ def perform_action(state, action):
             data = s.recv(1024)
 
     if action[1] > 0:
-        if float(dimmer) + 0.25 <= 1:
-            print(str.encode(str(float(dimmer) + 0.25)))
-            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.25)))
+        if float(dimmer) + 0.1 <= 1:
+            print(str.encode(str(float(dimmer) + 0.1)))
+            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.1)))
             data = s.recv(1024)
         else:
             done = True
     elif action[1] < 0:
-        if float(dimmer) - 0.25 >= 0:
-            print(str.encode(str(float(dimmer) - 0.25)))
-            s.sendall(b'set_dimmer' + str.encode(str(float(dimmer) - 0.25)))
+        if float(dimmer) - 0.1 >= 0:
+            print(str.encode(str(float(dimmer) - 0.1)))
+            s.sendall(b'set_dimmer' + str.encode(str(float(dimmer) - 0.1)))
             data = s.recv(1024)
         else:
             done = True
