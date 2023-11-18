@@ -120,6 +120,7 @@ def calculate_utility(state):
 
 
 def reset(server_init, dimmer_init):
+    print("resetting environment\n")
     state = get_system_state()
     crt_serevr = state[-1]
     host = "127.0.0.1"
@@ -149,6 +150,8 @@ dimmer_init = state_init[-2]
 while True:  # Replace with the condition appropriate for your application
     # Monitor
     state = get_system_state()
+    print("server ")
+    print(state[-1])
 
     # Plan
     action = manager.select_action(state)
@@ -157,7 +160,7 @@ while True:  # Replace with the condition appropriate for your application
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
-    time.sleep(5)
+    time.sleep(10)
     next_state = get_system_state()
 
     # Analyze
