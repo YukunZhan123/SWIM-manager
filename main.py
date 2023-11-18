@@ -71,7 +71,7 @@ class ActorCriticManager:
         critic_loss = (td_target - value).pow(2).mean()
         
         self.critic_optimizer.zero_grad()
-        critic_loss.backward()
+        critic_loss.backward(retain_graph=True)
         self.critic_optimizer.step()
 
         # Calculate the actor loss and update the actor
