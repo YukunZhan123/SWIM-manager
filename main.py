@@ -126,7 +126,6 @@ def reset():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
     s.sendall(b'set_dimmer 0.65')
-    s.close()
 
 
 

@@ -56,7 +56,6 @@ def get_system_state():
     print(" active_server", server_in_use)
     state.append(server_in_use)
 
-    s.close()
 
     return state
 
@@ -101,7 +100,6 @@ def perform_action(state, action):
             data = s.recv(1024)
         else:
             done = True
-    s.close()
     return done
 
 
