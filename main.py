@@ -150,8 +150,6 @@ dimmer_init = state_init[-2]
 while True:  # Replace with the condition appropriate for your application
     # Monitor
     print("resetting environment\n")
-    state = get_system_state()
-    crt_serevr = state[-1]
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

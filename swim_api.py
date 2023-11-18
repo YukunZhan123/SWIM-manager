@@ -39,6 +39,7 @@ def get_system_state():
     s.sendall(b'get_arrival_rate')
     data = s.recv(1024)
     arrival_rate = float(str(data.decode("utf-8")))
+    print(" Rate", arrival_rate)
     state.append(arrival_rate)
 
 
@@ -52,6 +53,7 @@ def get_system_state():
     s.sendall(b'get_active_servers')
     data = s.recv(1024)
     server_in_use = int(str(data.decode("utf-8")))
+    print(" active_server", server_in_use)
     state.append(server_in_use)
 
     return state
@@ -87,6 +89,7 @@ def perform_action(state, action):
             print(str.encode(str(float(dimmer) + 0.1)))
             s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.1)))
             data = s.recv(1024)
+
         else:
             done = True
     elif action[1] < 0:
