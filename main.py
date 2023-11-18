@@ -125,7 +125,7 @@ def reset():
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.65')
+    s.sendall(b'set_dimmer 0.25')
 
 
 
@@ -135,9 +135,6 @@ action_choices = [["add", 0], ["remove", 0], ["nothing", 0.1], ["nothing", -0.1]
 action_size = 9  # Number of actions
 manager = ActorCriticManager(state_size, action_size)
 
-state_init = get_system_state()
-server_init = state_init[-1]
-dimmer_init = state_init[-2]
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
@@ -161,5 +158,5 @@ while True:  # Replace with the condition appropriate for your application
     manager.update(state, int(action), reward, next_state, done)
 
     if done:  # Implement the logic to determine if the episode has ended
-        reset(server_init, dimmer_init)
+        reset()
         continue
