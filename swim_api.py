@@ -13,7 +13,6 @@ def get_system_state():
     response_time_base = str(data.decode("utf-8"))
     s.close()
 
-    conn = s.connect((host, port))
     s.sendall(b'get_opt_rt')
     data = s.recv(1024)
     response_time_opt = str(data.decode("utf-8"))
