@@ -69,28 +69,28 @@ def perform_action(state, action):
     max_server = int(str(data.decode("utf-8")))
     done = False
     if action[0]=="add":
-        if server== max_server:
+        if server == max_server:
             done = True
         else:
             s.sendall(b'add_server')
             data = s.recv(1024)
             done = False
     elif action[0]=="remove":
-        if server == 0:
+        if server == 1:
             done = True
         else:
             s.sendall(b'remove_server')
             data = s.recv(1024)
 
     if action[1] > 0:
-        if float(dimmer) + 0.1 <= 1:
+        if float(dimmer) + 0.1 < 1:
             print(str.encode(str(float(dimmer) + 0.1)))
             s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.1)))
             data = s.recv(1024)
         else:
             done = True
     elif action[1] < 0:
-        if float(dimmer) - 0.1 >= 0:
+        if float(dimmer) - 0.1 > 0:
             print(str.encode(str(float(dimmer) - 0.1)))
             s.sendall(b'set_dimmer' + str.encode(str(float(dimmer) - 0.1)))
             data = s.recv(1024)
