@@ -64,25 +64,30 @@ class ActorCriticManager:
         reward_tensor = torch.FloatTensor([reward])
         done_tensor = torch.FloatTensor([done])
 
-        # Calculate the critic loss and update the critic
-        value = self.critic(state_tensor)
-        next_value = self.critic(next_state_tensor)
+        # Ensure no inplace operations are performed on value and next_value
+        value = self.critic(state_tensor).clone()
+        next_value = self.critic(next_state_tensor).clone()
+
+        # Calculate the temporal difference target
         td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
+
+        # Compute the critic loss
         critic_loss = (td_target - value).pow(2).mean()
-        
         self.critic_optimizer.zero_grad()
-        critic_loss.backward(retain_graph=True)
+        critic_loss.backward(retain_graph=True)  # Retain the graph for actor update
         self.critic_optimizer.step()
 
-        # Calculate the actor loss and update the actor
-        # action_probs = probs.gather(1, action_tensor.unsqueeze(1)).squeeze(1)
-        probs = self.actor(state_tensor).unsqueeze(0)  # Add a batch dimension
-        action_tensor = torch.LongTensor([action]).unsqueeze(1)  # Make it [1, 1]
+        # Compute the actor loss
+        probs = self.actor(state_tensor).unsqueeze(0)
+        action_tensor = torch.LongTensor([action]).unsqueeze(1)
         action_probs = probs.gather(1, action_tensor).squeeze(1)
+
+        # Negative log-likelihood loss
         actor_loss = -torch.log(action_probs) * (td_target - value.detach()).squeeze()
-        
+
+        # Reset gradients and perform a backward pass for the actor
         self.actor_optimizer.zero_grad()
-        actor_loss.backward()
+        actor_loss.backward()  # No need to retain graph here
         self.actor_optimizer.step()
 
 # Utility function
