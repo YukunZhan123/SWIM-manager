@@ -77,7 +77,10 @@ class ActorCriticManager:
 
         # Calculate the actor loss and update the actor
         probs = self.actor(state_tensor)
-        action_probs = probs.gather(1, action_tensor.unsqueeze(1)).squeeze(1)
+        # action_probs = probs.gather(1, action_tensor.unsqueeze(1)).squeeze(1)
+        probs = self.actor(state_tensor).unsqueeze(0)  # Add a batch dimension
+        action_tensor = torch.LongTensor([action]).unsqueeze(1)  # Make it [1, 1]
+        action_probs = probs.gather(1, action_tensor).squeeze(1)
         actor_loss = -torch.log(action_probs) * (td_target - value.detach()).squeeze(1)
         
         self.actor_optimizer.zero_grad()
