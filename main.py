@@ -144,11 +144,10 @@ while True:  # Replace with the condition appropriate for your application
     # Plan
     action = manager.select_action(state)
     print(action)
-    action = action_choices[action]
 
 
     # Execute
-    done = perform_action(state, action)  # Implement this function
+    done = perform_action(state, action_choices[action])  # Implement this function
     time.sleep(60)
     next_state = get_system_state()
 
