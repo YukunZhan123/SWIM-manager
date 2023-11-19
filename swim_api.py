@@ -70,6 +70,7 @@ def perform_action(state, action):
     conn = s.connect((host, port))
     s.sendall(b'get_max_servers')
     data = s.recv(1024)
+    print("max server", str(data.decode("utf-8")))
     max_server = int(str(data.decode("utf-8")))
     done = False
 
