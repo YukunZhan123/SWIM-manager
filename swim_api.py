@@ -76,7 +76,7 @@ def perform_action(state, action):
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    if action[0]>="add":
+    if action[0]=="add":
         if server == max_server:
             done = True
         else:
