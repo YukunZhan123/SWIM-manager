@@ -64,6 +64,7 @@ def perform_action(state, action):
     print(action)
     dimmer = state[-2]
     server = state[-1] * 5
+    print(server)
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
