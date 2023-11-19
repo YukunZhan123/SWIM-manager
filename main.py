@@ -19,12 +19,14 @@ class Actor(nn.Module):
             nn.ReLU(),
             nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Linear(256, action_size),
-            nn.Softmax(dim=-1)
+            nn.Linear(256, action_size)
         )
-        
+        self.log_softmax = nn.LogSoftmax(dim=-1)  # Use LogSoftmax
+
     def forward(self, state):
-        return self.network(state)
+        x = self.network(state)
+        return self.log_softmax(x)  # Return log probabilities
+
 
 # Define Critic network architecture
 class Critic(nn.Module):
@@ -87,12 +89,11 @@ class ActorCriticManager:
         self.critic_optimizer.step()
 
         # Compute the actor loss
-        probs = self.actor(state_tensor).unsqueeze(0)
         action_tensor = torch.LongTensor([action]).unsqueeze(1)
-        action_probs = probs.gather(1, action_tensor).squeeze(1)
-
-        # Negative log-likelihood loss
-        actor_loss = -torch.log(action_probs) * (td_target - value.detach()).squeeze()
+        # Compute the actor loss using log probabilities
+        log_probs = self.actor(state_tensor).unsqueeze(0)  # Log probabilities
+        action_log_probs = log_probs.gather(1, action_tensor).squeeze(1)
+        actor_loss = -action_log_probs * (td_target - value.detach()).squeeze()
         print("actor_loss ", actor_loss)
 
         # Reset gradients and perform a backward pass for the actor
