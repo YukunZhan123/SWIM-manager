@@ -105,20 +105,20 @@ class ActorCriticManager:
 # Utility function
 def calculate_utility(state):
     # Define target and threshold levels for response time and throughput
-    TARGET_RT = 0.5  # Target response time (lower is better)
-    TARGET_TP = 100  # Target throughput (higher is better)
+    TARGET_RT = 0.06  # Target response time (lower is better)
+    TARGET_TP = 7  # Target throughput (higher is better)
 
 
     # Calculate a combined throughput
-    combined_tp = state[1]
-    combined_rt = state[0]
+    combined_tp = state[1] * 6
+    combined_rt = state[0] * 0.05
 
     # Utility is higher when the combined response time is lower than the target, and combined throughput meets the target
     rt_utility = max(0, TARGET_RT - combined_rt) / TARGET_RT
     tp_utility = min(1, combined_tp / TARGET_TP)
 
     # Cost efficiency is assumed to be inversely proportional to the number of servers
-    cost_utility = 1 / state[-1] if state[-1] else 0
+    cost_utility = 1 / (state[-1] * 5) if state[-1] else 0
 
 
     # The overall utility is a weighted sum of response time utility, throughput utility, and cost utility
