@@ -63,20 +63,19 @@ def get_system_state():
 def perform_action(state, action):
     print(action)
     dimmer = state[-2]
-    server = state[-1]
+    server = state[-1] * 5
     host = "127.0.0.1"
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
     s.sendall(b'get_max_servers')
     data = s.recv(1024)
-    print("max server", str(data.decode("utf-8")))
     max_server = int(str(data.decode("utf-8")))
     done = False
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    if action[0]=="add":
+    if action[0]>="add":
         if server == max_server:
             done = True
         else:
