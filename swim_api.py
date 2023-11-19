@@ -19,7 +19,7 @@ def get_system_state():
 
     response_time = (float(response_time_base) + float(response_time_opt)) / 2.0
     print (" Response time", response_time)
-    state.append(response_time)
+    state.append(response_time/0.05)
 
 
 
@@ -33,7 +33,7 @@ def get_system_state():
 
     throughput = (float(throughput_base) + float(throughput_opt)) / 2.0
     print (" Throughput", throughput)
-    state.append(throughput)
+    state.append(throughput/6)
 
 
 
@@ -41,7 +41,7 @@ def get_system_state():
     data = s.recv(1024)
     arrival_rate = float(str(data.decode("utf-8")))
     print(" Rate", arrival_rate)
-    state.append(arrival_rate)
+    state.append(arrival_rate/13)
 
 
     s.sendall(b'get_dimmer')
@@ -55,7 +55,7 @@ def get_system_state():
     data = s.recv(1024)
     server_in_use = int(str(data.decode("utf-8")))
     print(" active_server", server_in_use)
-    state.append(server_in_use)
+    state.append(server_in_use/5)
 
 
     return state
