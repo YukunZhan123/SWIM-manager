@@ -158,7 +158,7 @@ state_size = 5
 action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
 action_size = 9
 replay_buffer = ReplayBuffer(capacity=10000)
-batch_size = 32
+batch_size = 16
 
 manager = ActorCriticManager(state_size, action_size, epsilon)
 
