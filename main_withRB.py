@@ -141,7 +141,7 @@ def reset():
 
 
 if len(sys.argv) == 2:
-    epsilon = sys.argv[1]
+    epsilon = int(sys.argv[1])
 else:
     epsilon = 1
 
@@ -164,6 +164,7 @@ reset()
 iteration_counter = 0
 
 while True:  # Replace with your specific condition
+    
     state = get_system_state()
     action = manager.select_action(state)
     done = perform_action(state, action_choices[action])

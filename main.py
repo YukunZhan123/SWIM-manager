@@ -139,7 +139,7 @@ def reset():
 
 
 if len(sys.argv) == 2:
-    epsilon = sys.argv[1]
+    epsilon = int(sys.argv[1])
 else:
     epsilon = 1
 
