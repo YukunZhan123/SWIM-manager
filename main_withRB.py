@@ -77,13 +77,16 @@ class ActorCriticManager:
         with torch.no_grad():
             action_probs = self.actor(state_tensor).numpy()
         if random.random() < self.epsilon:
+            print("random explore")
             action = np.random.choice(len(action_probs))
             self.epsilon *= 0.99
         else:
+            print("choose best action")
             action = np.argmax(action_probs)
         return action
 
     def update_batch(self, states, actions, rewards, next_states, dones):
+        print("reward ", reward)
         states = torch.FloatTensor(states)
         actions = torch.LongTensor(actions).unsqueeze(1)
         rewards = torch.FloatTensor(rewards)
@@ -95,6 +98,7 @@ class ActorCriticManager:
         td_targets = rewards + self.gamma * next_values * (1 - dones)
 
         critic_loss = (td_targets - values).pow(2).mean()
+        print("critic_loss ", critic_loss)
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
@@ -102,6 +106,7 @@ class ActorCriticManager:
         log_probs = self.actor(states)
         action_log_probs = log_probs.gather(1, actions).squeeze(1)
         actor_loss = -action_log_probs * (td_targets - values.detach()).squeeze()
+        print("critic_loss ", actor_loss)
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
         self.actor_optimizer.step()
@@ -164,7 +169,8 @@ reset()
 iteration_counter = 0
 
 while True:  # Replace with your specific condition
-    
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    print("it:", iteration_counter)
     state = get_system_state()
     action = manager.select_action(state)
     done = perform_action(state, action_choices[action])
