@@ -103,12 +103,15 @@ class ActorCriticManager:
         critic_loss.backward()
         self.critic_optimizer.step()
 
+        # Compute the actor loss
         log_probs = self.actor(states)
         action_log_probs = log_probs.gather(1, actions).squeeze(1)
-        actor_loss = -action_log_probs * (td_targets - values.detach()).squeeze()
-        print("critic_loss ", actor_loss)
+        advantages = (td_targets - values.detach()).squeeze()
+        actor_loss = -action_log_probs * advantages
+        actor_loss = actor_loss.mean()  # Ensure actor_loss is a scalar by averaging over all losses
+        print("actor_loss ", actor_loss.item())  # Use .item() to get the actual value if you want to print it
         self.actor_optimizer.zero_grad()
-        actor_loss.backward()
+        actor_loss.backward()  # This should not raise the error anymore
         self.actor_optimizer.step()
 
 # Utility function
@@ -174,7 +177,7 @@ while True:  # Replace with your specific condition
     state = get_system_state()
     action = manager.select_action(state)
     done = perform_action(state, action_choices[action])
-    time.sleep(5)
+    time.sleep(1)
     next_state = get_system_state()
     reward = calculate_utility(next_state)
 
