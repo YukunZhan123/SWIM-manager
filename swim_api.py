@@ -55,7 +55,7 @@ def get_system_state():
     data = s.recv(1024)
     server_in_use = int(str(data.decode("utf-8")))
     print(" active_server", server_in_use)
-    state.append(server_in_use/5)
+    state.append(server_in_use/3)
 
 
     return state
@@ -83,7 +83,7 @@ def perform_action(state, action):
             s.sendall(b'add_server')
             data = s.recv(1024)
     elif action[0]=="remove":
-        if server == 2:
+        if server == 1:
             done = True
         else:
             s.sendall(b'remove_server')
@@ -109,6 +109,8 @@ def perform_action(state, action):
             data = s.recv(1024)
         else:
             done = True
+
+    time.sleep(1)
     return done
 
 
