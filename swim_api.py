@@ -63,7 +63,7 @@ def get_system_state():
 def perform_action(state, action):
     print(action)
     dimmer = state[-2]
-    server = state[-1] * 5
+    server = state[-1] * 3
     print(server)
     host = "127.0.0.1"
     port = 4242
