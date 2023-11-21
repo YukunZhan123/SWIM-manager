@@ -108,7 +108,7 @@ def perform_action(state, action):
         else:
             done = True
 
-    time.sleep(60)
+    time.sleep(2)
     return done
 
 
