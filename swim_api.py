@@ -88,11 +88,13 @@ def perform_action(state, action):
         else:
             s.sendall(b'remove_server')
             data = s.recv(1024)
-    time.sleep(60)
+    print("at 1")
+    time.sleep(2)
 
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
+    print("at 2")
     if action[1] > 0:
         if float(dimmer) + 0.25 <= 1:
             s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.25)))
@@ -107,7 +109,7 @@ def perform_action(state, action):
         else:
             done = True
 
-    time.sleep(60)
+    time.sleep(2)
     return done
 
 
