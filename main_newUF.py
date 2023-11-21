@@ -184,7 +184,7 @@ iteration_counter = 0
 
 maxServiceRate = 1/0.04452713
 maxServers = 3
-RT_THRESHOLD = 0.06  # Example response time threshold
+RT_THRESHOLD = 0.075  # Example response time threshold
 
 while True:  # Replace with your specific condition
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
