@@ -88,8 +88,7 @@ def perform_action(state, action):
         else:
             s.sendall(b'remove_server')
             data = s.recv(1024)
-
-
+    time.sleep(60)
 
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -108,7 +107,7 @@ def perform_action(state, action):
         else:
             done = True
 
-    time.sleep(2)
+    time.sleep(60)
     return done
 
 
