@@ -100,7 +100,7 @@ class ActorCriticManager:
         td_targets = rewards + self.gamma * next_values * (1 - dones)
 
         critic_loss = (td_targets - values).pow(2).mean()
-        print("critic_loss ", critic_loss)
+        print("critic_loss ", critic_loss.item())
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()

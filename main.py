@@ -16,11 +16,11 @@ class Actor(nn.Module):
     def __init__(self, state_size, action_size):
         super(Actor, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size, 128),
+            nn.Linear(state_size, 32),
             nn.ReLU(),
-            nn.Linear(128, 256),
+            nn.Linear(32, 64),
             nn.ReLU(),
-            nn.Linear(256, action_size)
+            nn.Linear(64, action_size)
         )
         self.log_softmax = nn.LogSoftmax(dim=-1)  # Use LogSoftmax
 
@@ -34,11 +34,11 @@ class Critic(nn.Module):
     def __init__(self, state_size):
         super(Critic, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size, 128),
+            nn.Linear(state_size, 32),
             nn.ReLU(),
-            nn.Linear(128, 256),
+            nn.Linear(32, 64),
             nn.ReLU(),
-            nn.Linear(256, 1)
+            nn.Linear(64, 1)
         )
         
     def forward(self, state):
@@ -46,7 +46,7 @@ class Critic(nn.Module):
 
 # Actor-Critic Manager
 class ActorCriticManager:
-    def __init__(self, state_size, action_size, epsilon, actor_lr=0.005, critic_lr=0.005):
+    def __init__(self, state_size, action_size, epsilon, actor_lr=0.001, critic_lr=0.001):
         self.actor = Actor(state_size, action_size)
         self.critic = Critic(state_size)
         # Set custom learning rates for the actor and critic optimizers
@@ -84,7 +84,7 @@ class ActorCriticManager:
 
         # Compute the critic loss
         critic_loss = (td_target - value).pow(2).mean()
-        print("critic_loss ", critic_loss)
+        print("critic_loss ", critic_loss.item())
         self.critic_optimizer.zero_grad()
         critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
         self.critic_optimizer.step()
@@ -95,7 +95,7 @@ class ActorCriticManager:
         log_probs = self.actor(state_tensor).unsqueeze(0)  # Log probabilities
         action_log_probs = log_probs.gather(1, action_tensor).squeeze(1)
         actor_loss = -action_log_probs * (td_target - value.detach()).squeeze()
-        print("actor_loss ", actor_loss)
+        print("actor_loss ", actor_loss.item())
 
         # Reset gradients and perform a backward pass for the actor
         self.actor_optimizer.zero_grad()
