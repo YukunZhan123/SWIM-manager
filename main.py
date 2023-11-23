@@ -222,6 +222,7 @@ while True:  # Replace with the condition appropriate for your application
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
+    time.sleep(30)
     next_state = get_system_state()
 
     # Analyze
