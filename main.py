@@ -154,7 +154,7 @@ def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
     else:
         utility = (max(0.0, arrivalRateMean - maxThroughput) * optRevenue) - Uc
 
-    return utility
+    return (utility - 10) * 3
 
 def reset():
     print("resetting environment")
@@ -162,7 +162,7 @@ def reset():
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.5')
+    s.sendall(b'set_dimmer 0.9')
     s.recv(1024)
 
 
@@ -174,7 +174,7 @@ else:
 # Real-time execution loop
 state_size = 5  # Size of the state vector
 # action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
-action_choices = [["add", 0], ["remove", 0], ["nothing", 0.5], ["nothing", -0.5], ["nothing", 0], ["add", 0.5], ["add", -0.5], ["remove", 0.5], ["remove", -0.5]]
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.4], ["nothing", -0.4], ["nothing", 0], ["add", 0.4], ["add", -0.4], ["remove", 0.4], ["remove", -0.4]]
 action_size = 9  # Number of actions
 
 
@@ -226,7 +226,7 @@ while True:  # Replace with the condition appropriate for your application
 
     # Analyze
     if done:
-        reward = -20
+        reward = -100
     else:
         reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
     # Update the manager
