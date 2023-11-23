@@ -96,15 +96,15 @@ def perform_action(state, action):
     conn = s.connect((host, port))
     print("at 2")
     if action[1] > 0:
-        if float(dimmer) + 0.25 <= 1:
-            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.25)))
+        if float(dimmer) + 0.5 <= 1:
+            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.5)))
             data = s.recv(1024)
 
         else:
             done = True
     elif action[1] < 0:
-        if float(dimmer) - 0.25 >= 0:
-            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) - 0.25)))
+        if float(dimmer) - 0.5 >= 0:
+            s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) - 0.5)))
             data = s.recv(1024)
         else:
             done = True
