@@ -16,11 +16,11 @@ class Actor(nn.Module):
     def __init__(self, state_size, action_size):
         super(Actor, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size, 32),
+            nn.Linear(state_size, 128),
             nn.ReLU(),
-            nn.Linear(32, 64),
+            nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Linear(64, action_size)
+            nn.Linear(256, action_size)
         )
         self.log_softmax = nn.LogSoftmax(dim=-1)  # Use LogSoftmax
 
@@ -34,11 +34,11 @@ class Critic(nn.Module):
     def __init__(self, state_size):
         super(Critic, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size, 32),
+            nn.Linear(state_size, 128),
             nn.ReLU(),
-            nn.Linear(32, 64),
+            nn.Linear(128, 256),
             nn.ReLU(),
-            nn.Linear(64, 1)
+            nn.Linear(256, 1)
         )
         
     def forward(self, state):
