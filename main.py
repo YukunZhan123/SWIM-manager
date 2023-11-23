@@ -53,7 +53,7 @@ class ActorCriticManager:
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=critic_lr)
         self.epsilon = epsilon
-        self.gamma = 0.99  # Discount factor for future rewards
+        self.gamma = 0.1  # Discount factor for future rewards
 
     def select_action(self, state):
         state_tensor = torch.FloatTensor(state)
@@ -173,7 +173,8 @@ else:
 
 # Real-time execution loop
 state_size = 5  # Size of the state vector
-action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
+# action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.5], ["nothing", -0.5], ["nothing", 0], ["add", 0.5], ["add", -0.5], ["remove", 0.5], ["remove", -0.5]]
 action_size = 9  # Number of actions
 
 
