@@ -225,7 +225,10 @@ while True:  # Replace with the condition appropriate for your application
     next_state = get_system_state()
 
     # Analyze
-    reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
+    if done:
+        reward = -20
+    else:
+        reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
     # Update the manager
     manager.update(state, int(action), reward, next_state, done)
 
