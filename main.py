@@ -104,29 +104,57 @@ class ActorCriticManager:
 
 
 # Utility function
-def calculate_utility(state):
-    # Define target and threshold levels for response time and throughput
-    TARGET_RT = 0.06  # Target response time (lower is better)
-    TARGET_TP = 7  # Target throughput (higher is better)
+# def calculate_utility(state):
+#     # Define target and threshold levels for response time and throughput
+#     TARGET_RT = 0.06  # Target response time (lower is better)
+#     TARGET_TP = 7  # Target throughput (higher is better)
+#
+#
+#     # Calculate a combined throughput
+#     combined_tp = state[1] * 6
+#     combined_rt = state[0] * 0.05
+#
+#     # Utility is higher when the combined response time is lower than the target, and combined throughput meets the target
+#     rt_utility = max(0, TARGET_RT - combined_rt) / TARGET_RT
+#     tp_utility = min(1, combined_tp / TARGET_TP)
+#
+#     # Cost efficiency is assumed to be inversely proportional to the number of servers
+#     cost_utility = 1 / (state[-1] * 3) if state[-1] else 0
+#
+#
+#     # The overall utility is a weighted sum of response time utility, throughput utility, and cost utility
+#     utility = rt_utility * 0.4 + tp_utility * 0.4 + cost_utility * 0.2
+#     return utility
 
+def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
+    basicRevenue = 1
+    optRevenue = 1.5
+    serverCost = 10
 
-    # Calculate a combined throughput
-    combined_tp = state[1] * 6
-    combined_rt = state[0] * 0.05
+    precision = 1e-5
 
-    # Utility is higher when the combined response time is lower than the target, and combined throughput meets the target
-    rt_utility = max(0, TARGET_RT - combined_rt) / TARGET_RT
-    tp_utility = min(1, combined_tp / TARGET_TP)
+    maxThroughput = maxServers * maxServiceRate
 
-    # Cost efficiency is assumed to be inversely proportional to the number of servers
-    cost_utility = 1 / (state[-1] * 5) if state[-1] else 0
+    # Unpacking state values (assuming state is [avgResponseTime, avgThroughput, arrivalRateMean, dimmer, avgServers])
+    avgResponseTime = state[0] * 0.05  # Assuming state[0] is the average response time
+    avgThroughput = state[1] * 6   # Assuming state[1] is the average throughput
+    arrivalRateMean = state[2] * 13  # Assuming state[2] is the mean arrival rate
+    dimmer = state[3]           # Assuming state[3] is the dimmer value
+    avgServers = state[4] * 3   # Assuming state[4] is the average number of servers
 
+    Ur = (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
+    Uc = serverCost * (maxServers - avgServers)
+    UrOpt = arrivalRateMean * optRevenue
 
-    # The overall utility is a weighted sum of response time utility, throughput utility, and cost utility
-    utility = rt_utility * 0.4 + tp_utility * 0.4 + cost_utility * 0.2
+    utility = 0
+    if avgResponseTime <= RT_THRESHOLD and Ur >= UrOpt - precision:
+        utility = Ur - Uc
+    elif avgResponseTime <= RT_THRESHOLD:
+        utility = Ur
+    else:
+        utility = (max(0.0, arrivalRateMean - maxThroughput) * optRevenue) - Uc
+
     return utility
-
-
 
 def reset():
     print("resetting environment")
@@ -169,13 +197,17 @@ reset()
 
 # Add a counter for iterations
 iteration_counter = 0
+maxServiceRate = 1/0.04452713
+maxServers = 3
+RT_THRESHOLD = 0.075  # Example response time threshold
+
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("it: ", iteration_counter)
 
-    if iteration_counter % 30 == 0:
+    if iteration_counter % 10 == 0:
         # Save the actor and critic networks
         torch.save(manager.actor.state_dict(), f'actor.pth')
         torch.save(manager.critic.state_dict(), f'critic.pth')
@@ -189,12 +221,10 @@ while True:  # Replace with the condition appropriate for your application
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
-    time.sleep(5)
     next_state = get_system_state()
 
     # Analyze
-    reward = calculate_utility(next_state)
-
+    reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
     # Update the manager
     manager.update(state, int(action), reward, next_state, done)
 

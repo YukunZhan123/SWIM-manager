@@ -113,7 +113,7 @@ class ActorCriticManager:
         actor_loss = actor_loss.mean()  # Ensure actor_loss is a scalar by averaging over all losses
         print("actor_loss ", actor_loss.item())  # Use .item() to get the actual value if you want to print it
         self.actor_optimizer.zero_grad()
-        actor_loss.backward()  # This should not raise the error anymore
+        actor_loss.backward()
         self.actor_optimizer.step()
 
 
