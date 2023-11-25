@@ -101,7 +101,7 @@ class ActorCriticManager:
         td_target = reward_tensor
         # Compute the critic loss
         critic_loss = (td_target - value).pow(2)
-        self.critic_loss = critic_loss
+        self.critic_loss = critic_loss.item()
         print("critic_loss ", critic_loss.item())
         self.critic_optimizer.zero_grad()
         critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
@@ -114,7 +114,7 @@ class ActorCriticManager:
         # Log probabilities
         action_log_probs = action_probs.gather(1, action_index).squeeze(1)
         actor_loss = -action_log_probs * (td_target - value.detach()).squeeze()
-        self.actor_loss = actor_loss
+        self.actor_loss = actor_loss.item()
         print("actor_loss ", actor_loss.item())
 
         # Reset gradients and perform a backward pass for the actor
