@@ -55,7 +55,7 @@ def get_system_state():
     data = s.recv(1024)
     server_in_use = int(str(data.decode("utf-8")))
     print(" active_server", server_in_use)
-    state.append(server_in_use/3)
+    state.append(server_in_use)
 
 
     return state
@@ -63,7 +63,7 @@ def get_system_state():
 def perform_action(state, action):
     print(action)
     dimmer = state[-2]
-    server = state[-1] * 3
+    server = state[-1]
     print(server)
     host = "127.0.0.1"
     port = 4242
@@ -83,18 +83,18 @@ def perform_action(state, action):
             s.sendall(b'add_server')
             data = s.recv(1024)
     elif action[0]=="remove":
-        if server < 2:
+        if server == 1:
             done = True
         else:
             s.sendall(b'remove_server')
             data = s.recv(1024)
-    print("at 1")
-    time.sleep(2)
+   
+    time.sleep(1)
 
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    print("at 2")
+    
     if action[1] > 0:
         if float(dimmer) + 0.4 <= 1:
             s.sendall(b'set_dimmer ' + str.encode(str(float(dimmer) + 0.4)))
@@ -109,7 +109,7 @@ def perform_action(state, action):
         else:
             done = True
 
-    time.sleep(2)
+    #time.sleep(2)
     return done
 
 

@@ -31,69 +31,82 @@ class Actor(nn.Module):
 
 # Define Critic network architecture
 class Critic(nn.Module):
-    def __init__(self, state_size):
+    def __init__(self, state_size, action_size):
         super(Critic, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size, 128),
+            nn.Linear(state_size+action_size, 128),
             nn.ReLU(),
             nn.Linear(128, 256),
             nn.ReLU(),
             nn.Linear(256, 1)
         )
         
-    def forward(self, state):
-        return self.network(state)
+    def forward(self, state, action_one_hot):
+        x = torch.cat([state, action_one_hot], dim = 1)
+        return self.network(x)
 
 # Actor-Critic Manager
 class ActorCriticManager:
-    def __init__(self, state_size, action_size, epsilon, actor_lr=0.001, critic_lr=0.001):
+    def __init__(self, state_size, action_size, epsilon, actor_lr=0.0002, critic_lr=0.001):
         self.actor = Actor(state_size, action_size)
-        self.critic = Critic(state_size)
+        self.critic = Critic(state_size, action_size)
         # Set custom learning rates for the actor and critic optimizers
         self.actor_optimizer = optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=critic_lr)
         self.epsilon = epsilon
-        self.gamma = 0.1  # Discount factor for future rewards
+        self.gamma = 0  # Discount factor for future rewards
 
     def select_action(self, state):
         state_tensor = torch.FloatTensor(state)
         with torch.no_grad():
             action_probs = self.actor(state_tensor).numpy()
+            print("best action is: ", np.argmax(action_probs), action_probs)
         if random.random() < self.epsilon:
             print("random explore")
             action = np.random.choice(len(action_probs))
-            self.epsilon *= 0.99
+            self.epsilon *= 0.9999
         else:
             print("choose best action")
             action = np.argmax(action_probs)
-        return action
+        action_one_hot = np.zeros(9)
+        action_one_hot[action] = 1
+        return action, action_one_hot
 
-    def update(self, state, action, reward, next_state, done):
+    def update(self, state, action, action_one_hot, reward, next_state, done):
         print("reward ", reward)
-        state_tensor = torch.FloatTensor(state)
-        next_state_tensor = torch.FloatTensor(next_state)
-        reward_tensor = torch.FloatTensor([reward])
-        done_tensor = torch.FloatTensor([done])
+        server = int(state[4])
+        dimmer = float(state[3])
+        s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3:[0, 0, 1]}
+        d_to_one_hot = {0.1: [1, 0, 0], 0.5: [0, 1, 0], 0.9: [0, 0, 1]}
+        state = state[:3] + d_to_one_hot[dimmer] + state[4:] 
+        state = state[:-1] + s_to_one_hot[server]
+        state_tensor = torch.FloatTensor(state).unsqueeze(0)
+        next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0)
+        reward_tensor = torch.FloatTensor([reward]).unsqueeze(0)
+        done_tensor = torch.FloatTensor([done]).unsqueeze(0)
+        action_tensor = torch.FloatTensor(action_one_hot).unsqueeze(0)
 
         # Calculate the critic's estimate of the state's value and next state's value
-        value = self.critic(state_tensor)
-        next_value = self.critic(next_state_tensor).detach()
+        value = self.critic(state_tensor, action_tensor)
+        print("predicted: ", value.item())
+        #next_value = self.critic(next_state_tensor).detach()
 
         # Calculate the temporal difference target
-        td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
-
+        #td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
+        td_target = reward_tensor
         # Compute the critic loss
-        critic_loss = (td_target - value).pow(2).mean()
+        critic_loss = (td_target - value).pow(2)
         print("critic_loss ", critic_loss.item())
         self.critic_optimizer.zero_grad()
         critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
         self.critic_optimizer.step()
 
         # Compute the actor loss
-        action_tensor = torch.LongTensor([action]).unsqueeze(1)
+        action_probs = self.actor(state_tensor)
+        action_index = torch.LongTensor([action]).unsqueeze(0)
         # Compute the actor loss using log probabilities
-        log_probs = self.actor(state_tensor).unsqueeze(0)  # Log probabilities
-        action_log_probs = log_probs.gather(1, action_tensor).squeeze(1)
+        # Log probabilities
+        action_log_probs = action_probs.gather(1, action_index).squeeze(1)
         actor_loss = -action_log_probs * (td_target - value.detach()).squeeze()
         print("actor_loss ", actor_loss.item())
 
@@ -140,7 +153,7 @@ def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
     avgThroughput = state[1] * 6   # Assuming state[1] is the average throughput
     arrivalRateMean = state[2] * 13  # Assuming state[2] is the mean arrival rate
     dimmer = state[3]           # Assuming state[3] is the dimmer value
-    avgServers = state[4] * 3   # Assuming state[4] is the average number of servers
+    avgServers = state[4]   # Assuming state[4] is the average number of servers
 
     Ur = (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
     Uc = serverCost * (maxServers - avgServers)
@@ -154,7 +167,7 @@ def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
     else:
         utility = (max(0.0, arrivalRateMean - maxThroughput) * optRevenue) - Uc
 
-    return (utility - 10) * 3
+    return utility
 
 def reset():
     print("resetting environment")
@@ -162,7 +175,7 @@ def reset():
     port = 4242
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     conn = s.connect((host, port))
-    s.sendall(b'set_dimmer 0.9')
+    s.sendall(b'set_dimmer 0.5')
     s.recv(1024)
 
 
@@ -172,7 +185,7 @@ else:
     epsilon = 1
 
 # Real-time execution loop
-state_size = 5  # Size of the state vector
+state_size = 9  # Size of the state vector
 # action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
 action_choices = [["add", 0], ["remove", 0], ["nothing", 0.4], ["nothing", -0.4], ["nothing", 0], ["add", 0.4], ["add", -0.4], ["remove", 0.4], ["remove", -0.4]]
 action_size = 9  # Number of actions
@@ -214,24 +227,32 @@ while True:  # Replace with the condition appropriate for your application
         torch.save(manager.critic.state_dict(), f'critic.pth')
 
     state = get_system_state()
+    state_modified = state[:] 
+    server = int(state[4])
+    dimmer = float(state[3])
+    s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3:[0, 0, 1]}
+    d_to_one_hot = {0.1: [1, 0, 0], 0.5: [0, 1, 0], 0.9: [0, 0, 1]}
+    state_modified = state_modified[:3] + d_to_one_hot[dimmer] + state_modified[4:] 
+    state_modified = state_modified[:-1] + s_to_one_hot[server]
+     
 
     # Plan
-    action = manager.select_action(state)
-    print(action)
+    action, action_one_hot = manager.select_action(state_modified)
+    print(action, action_one_hot)
 
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
-    time.sleep(30)
+    time.sleep(5)
     next_state = get_system_state()
 
     # Analyze
     if done:
-        reward = -100
+        reward = -30
     else:
         reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
     # Update the manager
-    manager.update(state, int(action), reward, next_state, done)
+    manager.update(state, int(action), action_one_hot, reward, next_state, done)
 
     iteration_counter += 1  # Increment the counter
 
