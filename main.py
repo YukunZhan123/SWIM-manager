@@ -7,9 +7,11 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random
+import csv
 from swim_api import get_system_state, perform_action  # Replace with your actual SWIM API calls
 
 torch.autograd.set_detect_anomaly(True)
+
 
 # Define Actor network architecture
 class Actor(nn.Module):
@@ -34,16 +36,17 @@ class Critic(nn.Module):
     def __init__(self, state_size, action_size):
         super(Critic, self).__init__()
         self.network = nn.Sequential(
-            nn.Linear(state_size+action_size, 128),
+            nn.Linear(state_size + action_size, 128),
             nn.ReLU(),
             nn.Linear(128, 256),
             nn.ReLU(),
             nn.Linear(256, 1)
         )
-        
+
     def forward(self, state, action_one_hot):
-        x = torch.cat([state, action_one_hot], dim = 1)
+        x = torch.cat([state, action_one_hot], dim=1)
         return self.network(x)
+
 
 # Actor-Critic Manager
 class ActorCriticManager:
@@ -55,6 +58,8 @@ class ActorCriticManager:
         self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=critic_lr)
         self.epsilon = epsilon
         self.gamma = 0  # Discount factor for future rewards
+        self.critic_loss = 0
+        self.actor_loss = 0
 
     def select_action(self, state):
         state_tensor = torch.FloatTensor(state)
@@ -76,9 +81,9 @@ class ActorCriticManager:
         print("reward ", reward)
         server = int(state[4])
         dimmer = float(state[3])
-        s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3:[0, 0, 1]}
+        s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3: [0, 0, 1]}
         d_to_one_hot = {0.1: [1, 0, 0], 0.5: [0, 1, 0], 0.9: [0, 0, 1]}
-        state = state[:3] + d_to_one_hot[dimmer] + state[4:] 
+        state = state[:3] + d_to_one_hot[dimmer] + state[4:]
         state = state[:-1] + s_to_one_hot[server]
         state_tensor = torch.FloatTensor(state).unsqueeze(0)
         next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0)
@@ -89,13 +94,14 @@ class ActorCriticManager:
         # Calculate the critic's estimate of the state's value and next state's value
         value = self.critic(state_tensor, action_tensor)
         print("predicted: ", value.item())
-        #next_value = self.critic(next_state_tensor).detach()
+        # next_value = self.critic(next_state_tensor).detach()
 
         # Calculate the temporal difference target
-        #td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
+        # td_target = reward_tensor + self.gamma * next_value * (1 - done_tensor)
         td_target = reward_tensor
         # Compute the critic loss
         critic_loss = (td_target - value).pow(2)
+        self.critic_loss = critic_loss
         print("critic_loss ", critic_loss.item())
         self.critic_optimizer.zero_grad()
         critic_loss.backward(retain_graph=True)  # Default is retain_graph=False
@@ -108,6 +114,7 @@ class ActorCriticManager:
         # Log probabilities
         action_log_probs = action_probs.gather(1, action_index).squeeze(1)
         actor_loss = -action_log_probs * (td_target - value.detach()).squeeze()
+        self.actor_loss = actor_loss
         print("actor_loss ", actor_loss.item())
 
         # Reset gradients and perform a backward pass for the actor
@@ -150,10 +157,10 @@ def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
 
     # Unpacking state values (assuming state is [avgResponseTime, avgThroughput, arrivalRateMean, dimmer, avgServers])
     avgResponseTime = state[0] * 0.05  # Assuming state[0] is the average response time
-    avgThroughput = state[1] * 6   # Assuming state[1] is the average throughput
+    avgThroughput = state[1] * 6  # Assuming state[1] is the average throughput
     arrivalRateMean = state[2] * 13  # Assuming state[2] is the mean arrival rate
-    dimmer = state[3]           # Assuming state[3] is the dimmer value
-    avgServers = state[4]   # Assuming state[4] is the average number of servers
+    dimmer = state[3]  # Assuming state[3] is the dimmer value
+    avgServers = state[4]  # Assuming state[4] is the average number of servers
 
     Ur = (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
     Uc = serverCost * (maxServers - avgServers)
@@ -168,6 +175,7 @@ def calculate_utility(state, maxServers, maxServiceRate, RT_THRESHOLD):
         utility = (max(0.0, arrivalRateMean - maxThroughput) * optRevenue) - Uc
 
     return utility
+
 
 def reset():
     print("resetting environment")
@@ -187,9 +195,9 @@ else:
 # Real-time execution loop
 state_size = 9  # Size of the state vector
 # action_choices = [["add", 0], ["remove", 0], ["nothing", 0.25], ["nothing", -0.25], ["nothing", 0], ["add", 0.25], ["add", -0.25], ["remove", 0.25], ["remove", -0.25]]
-action_choices = [["add", 0], ["remove", 0], ["nothing", 0.4], ["nothing", -0.4], ["nothing", 0], ["add", 0.4], ["add", -0.4], ["remove", 0.4], ["remove", -0.4]]
+action_choices = [["add", 0], ["remove", 0], ["nothing", 0.4], ["nothing", -0.4], ["nothing", 0], ["add", 0.4],
+                  ["add", -0.4], ["remove", 0.4], ["remove", -0.4]]
 action_size = 9  # Number of actions
-
 
 # Define paths to your saved model files
 actor_model_path = 'actor.pth'
@@ -206,15 +214,21 @@ if os.path.exists(actor_model_path) and os.path.exists(critic_model_path):
 else:
     print("No saved model weights found, initializing new models.")
 
-
 reset()
 
 # Add a counter for iterations
 iteration_counter = 0
-maxServiceRate = 1/0.04452713
+maxServiceRate = 1 / 0.04452713
 maxServers = 3
 RT_THRESHOLD = 0.075  # Example response time threshold
 
+csv_file_path = 'log_data.csv'
+csv_header = ['Iteration', 'Reward', 'Critic Loss', 'Actor Loss']
+
+if os.path.exists(csv_file_path):
+    write_header = False
+else:
+    write_header = True
 
 while True:  # Replace with the condition appropriate for your application
     # Monitor
@@ -227,19 +241,17 @@ while True:  # Replace with the condition appropriate for your application
         torch.save(manager.critic.state_dict(), f'critic.pth')
 
     state = get_system_state()
-    state_modified = state[:] 
+    state_modified = state[:]
     server = int(state[4])
     dimmer = float(state[3])
-    s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3:[0, 0, 1]}
+    s_to_one_hot = {1: [1, 0, 0], 2: [0, 1, 0], 3: [0, 0, 1]}
     d_to_one_hot = {0.1: [1, 0, 0], 0.5: [0, 1, 0], 0.9: [0, 0, 1]}
-    state_modified = state_modified[:3] + d_to_one_hot[dimmer] + state_modified[4:] 
+    state_modified = state_modified[:3] + d_to_one_hot[dimmer] + state_modified[4:]
     state_modified = state_modified[:-1] + s_to_one_hot[server]
-     
 
     # Plan
     action, action_one_hot = manager.select_action(state_modified)
     print(action, action_one_hot)
-
 
     # Execute
     done = perform_action(state, action_choices[action])  # Implement this function
@@ -253,6 +265,18 @@ while True:  # Replace with the condition appropriate for your application
         reward = calculate_utility(next_state, maxServers, maxServiceRate, RT_THRESHOLD)
     # Update the manager
     manager.update(state, int(action), action_one_hot, reward, next_state, done)
+
+    # record data
+    with open(csv_file_path, 'a', newline='') as csv_file:
+        csv_writer = csv.writer(csv_file)
+
+        # Write header if it's a new file
+        if write_header:
+            csv_writer.writerow(csv_header)
+            write_header = False
+
+        # Write data for each iteration
+        csv_writer.writerow([iteration_counter, reward, manager.critic_loss, manager.actor_loss])
 
     iteration_counter += 1  # Increment the counter
 
